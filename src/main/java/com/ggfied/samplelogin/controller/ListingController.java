@@ -14,14 +14,14 @@ import com.ggfied.samplelogin.service.ListingService;
 @RestController
 @RequestMapping("/api/")
 public class ListingController {
-	
+
 	@Autowired
 	private ListingService listingService;
-	
+
 	@GetMapping("users")
 	public ResponseEntity<Object> listUsers() {
 		List<User> users = this.listingService.listUsers();
-		
+
 		return ResponseEntity.ok().body(users);
 	}
 

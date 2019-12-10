@@ -14,6 +14,7 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 
@@ -23,12 +24,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 @Entity
-@Table(name = "app_user", indexes = {
-		@Index(name = "username_idx", columnList = "username", unique = true)
-})
+@Table(name = "app_user", indexes = { @Index(name = "username_idx", columnList = "username", unique = true) })
 @NoArgsConstructor
+@RequiredArgsConstructor
 @Data
 @EqualsAndHashCode(exclude = "roles")
 public class User {
@@ -53,22 +54,16 @@ public class User {
 	@NotBlank(message = "Name is required")
 	private String name;
 
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinTable(name = "app_user_role", 
-	joinColumns = @JoinColumn(name = "app_user_id"), 
-	inverseJoinColumns = @JoinColumn(name = "app_role_id"))
-	private List<Role> roles = new ArrayList<>();
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "language_id", referencedColumnName = "id")
+	private Language language;
 
-	//	@Column(name = "created_at", nullable = false)
-	//	@CreatedDate
-	//	private Date createdAt;
-	//
-	//	@Column(name = "updated_at", nullable = false)
-	//	@LastModifiedDate
-	//	private Date updatedAt;
-	//
-	//	@Column(name = "updated_by", nullable = false)
-	//	@LastModifiedBy
-	//	private String updatedBy;
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinTable(name = "app_user_role", joinColumns = @JoinColumn(name = "app_user_id"), inverseJoinColumns = @JoinColumn(name = "app_role_id"))
+	private List<Role> roles = new ArrayList<>();
+	
+	public Object[] getRoleNames() {
+		return this.roles.stream().map(v -> v.getRoleName()).toArray();
+	}
 
 }

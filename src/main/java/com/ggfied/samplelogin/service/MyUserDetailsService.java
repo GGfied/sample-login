@@ -11,31 +11,31 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.ggfied.samplelogin.model.MyUserDetails;
 import com.ggfied.samplelogin.model.User;
 import com.ggfied.samplelogin.repository.UserRepository;
 
 @Service
 public class MyUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
-    
+	@Autowired
+	private UserRepository userRepository;
+
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
-        
-        if (user == null) {
-            throw new UsernameNotFoundException(String.format("The username %s doesn't exist", username));
-        }
-        
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        
-        user.getRoles().forEach(role -> {
-            authorities.add(new SimpleGrantedAuthority(role.getRoleName()));
-        });
+		User user = userRepository.findByUsername(username);
 
-        return new org.springframework.security.core.userdetails.
-                User(user.getUsername(), user.getPassword(), authorities);
+		if (user == null) {
+			throw new UsernameNotFoundException(String.format("The username %s doesn't exist", username));
+		}
+
+		List<GrantedAuthority> authorities = new ArrayList<>();
+
+		user.getRoles().forEach(role -> {
+			authorities.add(new SimpleGrantedAuthority(role.getRoleName()));
+		});
+
+		return new MyUserDetails(user, authorities);
 	}
 
 }

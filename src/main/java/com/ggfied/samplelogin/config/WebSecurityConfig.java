@@ -3,6 +3,7 @@ package com.ggfied.samplelogin.config;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -20,14 +21,17 @@ import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity(debug = true)
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	@Value("${security.signing-key}")
+	private String signingKey;
+	
+	@Value("${security.security-realm}")
+	private String securityRealm;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -35,38 +39,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private UserDetailsService userDetailsService;
 
-
-	private final String signingKey = "samplelogin";
-	private final String securityRealm = "samplelogin";
-
 	@Bean
 	public PasswordEncoder encoder() {
-		PasswordEncoder encoder = new BCryptPasswordEncoder();
-
-		System.out.println(encoder.encode("testjwtclientid"));
-		System.out.println(encoder.encode("user"));
-		System.out.println(encoder.encode("manager"));
-
-		return encoder;
+		return new BCryptPasswordEncoder();
 	}
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http
-		.sessionManagement()
-		.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-		.and()
-		.httpBasic()
-		.realmName(this.securityRealm)
-		.and()
-		.csrf()
-		.disable();
-	}	
+		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().httpBasic()
+				.realmName(this.securityRealm).and().csrf().disable();
+	}
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(this.userDetailsService)
-		.passwordEncoder(this.passwordEncoder);
+		auth.userDetailsService(this.userDetailsService).passwordEncoder(this.passwordEncoder);
 	}
 
 	@Override
@@ -90,7 +76,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-	@Primary //Making this primary to avoid any accidental duplication with another token service instance of the same name
+	@Primary // Making this primary to avoid any accidental duplication with another token
+				// service instance of the same name
 	public DefaultTokenServices tokenServices(@Autowired TokenStore tokenStore) {
 		DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
 
@@ -99,21 +86,5 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		return defaultTokenServices;
 	}
-
-    @Bean
-    public CorsFilter corsFilter() {
-        CorsConfiguration config = new CorsConfiguration();
-        
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("*");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        
-        source.registerCorsConfiguration("/**", config);
-        
-        return new CorsFilter(source);
-    }
 
 }

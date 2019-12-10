@@ -5,33 +5,34 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 @Entity
-@Table(name = "app_role", indexes = { @Index(name = "role_name_idx", columnList = "role_name", unique = true) })
+@Table(name = "language")
 @NoArgsConstructor
 @Data
-public class Role {
-
-	public static final String USER = "USER";
-	public static final String ADMIN = "ADMIN";
+public class Language {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
-	@Column(name = "role_name", nullable = false, unique = true)
+	@Column(name = "code", nullable = false, unique = true)
 	@NonNull
-	@NotBlank(message = "Role Name is required")
-	private String roleName;
+	@NotBlank(message = "Code is required")
+	private String code;
 
-	@Column(name = "description", nullable = false)
-	private String description;
+	@Column(name = "name", nullable = false)
+	@NonNull
+	@NotBlank(message = "Name is required")
+	@JsonIgnore
+	private String name;
 
 }

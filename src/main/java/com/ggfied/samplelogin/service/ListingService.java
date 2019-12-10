@@ -11,10 +11,10 @@ import com.ggfied.samplelogin.repository.UserRepository;
 
 @Service
 public class ListingService {
-	
+
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	public List<User> listUsers() {
 		return this.userRepository.findAllByRoles_RoleName(Role.USER);
 	}

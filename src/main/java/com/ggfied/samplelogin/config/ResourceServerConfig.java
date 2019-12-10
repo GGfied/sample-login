@@ -15,17 +15,6 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 	@Autowired
 	private ResourceServerTokenServices tokenServices;
 
-	@Autowired
-	private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-
-	@Autowired
-	private LoginSuccessHandler loginSucccessHandler;
-
-	@Autowired
-	private LoginFailureHandler loginFailureHandler;
-	
-	private final String resourceIds = "testjwtresourceid";
-
 	@Override
 	public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
 		resources.tokenServices(tokenServices);
@@ -33,27 +22,9 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
-		//		http
-		//	    .csrf().disable()
-		//		.exceptionHandling();
-		//		.authenticationEntryPoint(this.restAuthenticationEntryPoint)
-		//		.and()
-		//		.authorizeRequests()
-		//		.antMatchers("/api/foos").authenticated()
-		//		.antMatchers("/api/admin/**").hasRole("ADMIN")
-		//		.and()
-		//		.formLogin()
-		//		.successHandler(this.loginSucccessHandler)
-		//		.failureHandler(this.loginFailureHandler)
-		//		.and()
-		//		.logout();
-		http
-		.requestMatchers()
-		.and()
-		.authorizeRequests()
-		.antMatchers("/actuator/**", "/api-docs/**").permitAll()
-		.antMatchers("/api/**" ).authenticated()
-		.antMatchers("/api/admin/**").hasRole("ADMIN");
+		http.requestMatchers().and().authorizeRequests()
+				.antMatchers("/api/admin/**").hasRole("ADMIN")
+				.antMatchers("/api/**").authenticated();
 	}
 
 }

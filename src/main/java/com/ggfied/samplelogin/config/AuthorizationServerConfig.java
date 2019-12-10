@@ -1,5 +1,7 @@
 package com.ggfied.samplelogin.config;
 
+import java.util.Arrays;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,29 +13,33 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 @Configuration
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
-	
+
 	@Autowired
 	private DataSource dataSource;
-	
+
 	@Autowired
 	private JwtAccessTokenConverter accessTokenConverter;
-	
+
 	@Autowired
 	private TokenStore tokenStore;
 
 	@Autowired
 	private UserDetailsService userDetailsService;
-	
+
 	@Autowired
 	@Qualifier("authenticationManagerBean")
 	private AuthenticationManager authenticationManager;
+
+	@Autowired
+	private TokenEnhancer tokenEnhancer;
 
 	@Override
 	public void configure(ClientDetailsServiceConfigurer configurer) throws Exception {
@@ -42,21 +48,13 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
 	@Override
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-//		TokenEnhancerChain enhancerChain = new TokenEnhancerChain();
-//		
-//		enhancerChain.setTokenEnhancers(Arrays.asList(this.accessTokenConverter));
-		
-		endpoints.tokenStore(this.tokenStore)
-		.userDetailsService(this.userDetailsService)
-		.accessTokenConverter(this.accessTokenConverter)
-//		.tokenEnhancer(enhancerChain)
-		.authenticationManager(this.authenticationManager)
-		.reuseRefreshTokens(false);
+		TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+
+		tokenEnhancerChain.setTokenEnhancers(Arrays.asList(this.tokenEnhancer, this.accessTokenConverter));
+
+		endpoints.tokenStore(this.tokenStore).userDetailsService(this.userDetailsService)
+				.tokenEnhancer(tokenEnhancerChain).authenticationManager(this.authenticationManager)
+				.reuseRefreshTokens(false);
 	}
 
-    @Override
-    public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
-        oauthServer.tokenKeyAccess("hasAuthority('ROLE_TRUSTED_CLIENT')").checkTokenAccess("hasAuthority('ROLE_TRUSTED_CLIENT')");
-    }
-	
 }
